@@ -1,0 +1,21 @@
+CREATE TABLE note (
+    id INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM note;
+
+selectById:
+SELECT * FROM note WHERE id = ?;
+
+insertNote:
+INSERT INTO note (title, description) VALUES (?, ?);
+
+updateNote:
+UPDATE note SET title = ?, description = ? WHERE id = ?;
+
+deleteNote:
+DELETE FROM note WHERE id = ?;
+
