@@ -1,5 +1,6 @@
 package com.bigimpactproject.mysqldeilght
 
+import DatabaseFactory
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
@@ -8,6 +9,8 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "MySqlDeilght",
     ) {
-        App()
+        App(
+            databaseFactory = DatabaseFactory(),
+        )
     }
 }

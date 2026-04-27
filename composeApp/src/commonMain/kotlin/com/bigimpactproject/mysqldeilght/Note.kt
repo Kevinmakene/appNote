@@ -1,3 +1,7 @@
 package com.bigimpactproject.mysqldeilght
 
-data class Note()
+data class Notes(
+    val id : Long?,
+    val title : String,
+    val description : String
+)
