@@ -2,7 +2,9 @@ package com.bigimpactproject.mysqldeilght
 
 import BdHelper
 import DatabaseFactory
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,11 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,6 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bigimpactproject.mysqldeilght.remote.ApiService
+import com.bigimpactproject.mysqldeilght.remote.HttpclientProv
+import com.bigimpactproject.mysqldeilght.remote.MyRipository
 import kotlinx.coroutines.launch
 
 @Composable
@@ -34,60 +38,102 @@ fun App(
     MaterialTheme {
         val bdHelper = BdHelper(databaseFactory)
         val dbFetchers = DatabaseFetchersImpl(bdHelper)
-        val scope = rememberCoroutineScope ()
-        var notes by remember { mutableStateOf<List<Notes>?>(null)}
-        scope.launch {
-            notes = dbFetchers.getNotes() as List<Notes>
-        }
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            dbFetchers.insertNote(title = "New Note", description = "This is a new note")
-                            notes = dbFetchers.getNotes() as List<Notes>
+        val scope = rememberCoroutineScope()
+        var update by remember { mutableStateOf(false) }
+        val notes = remember { mutableStateListOf<Notes?>(null)}
+        val apiService = ApiService()
+        val  myRepository = MyRipository(
+           apiService = apiService,
+            databaseFetchers = dbFetchers
+        )
+        Column (
+            modifier = Modifier.safeContentPadding()
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Button(
+                onClick = {
+                    scope.launch {
+                        val response =myRepository.getElement()
+                        notes.clear()
+                        notes.addAll(response)
+                    }
+                }
+            ){
+                Text(text = "Insert Note")
+            }
+
+            LazyColumn {
+                items(notes){note->
+                    if (note == null){
+                    Text("No notes available")
+                    }else{
+                        Row(
+                            modifier = Modifier.padding(16.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ){
+                            Text(" ${note.title}  ${note.body}")
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        dbFetchers.deleteNote(id = note.id!!)
+                                    }
+                                    notes.remove(note)
+                                    update = !update
+                                }
+
+                            ){
+                                Text(text = "Delete")
+                            }
                         }
                     }
-                ){
-                    Text("click me")
+
+
                 }
             }
-        ) {
-            LazyColumn (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .safeContentPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-               items(notes ?: emptyList()) {
-                    MyCardFunction(notes = it)
-               }
+        }
+    }
 
-            }
-        }
-        }
 
 }
 
 @Composable
-fun MyCardFunction(notes: Notes){
+fun MyCardFunction(
+    notes: Notes,
+    onDelete: () -> Unit
+){
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
             .padding(16.dp),
     ) {
-        Text(
-            text = notes.title,
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 12.sp
-        )
-        Text(
-            text = notes.description,
-            style = MaterialTheme.typography.headlineMedium,
+        Row(
             modifier = Modifier.padding(16.dp),
-            fontSize = 8.sp
-        )
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = notes.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = notes.body,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 15.sp
+                )
+            }
+            Button(
+                onClick = { onDelete() },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(text = "Delete")
+            }
+        }
     }
 }
 

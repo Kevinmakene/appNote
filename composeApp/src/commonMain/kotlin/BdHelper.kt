@@ -11,10 +11,9 @@ class BdHelper(
     suspend fun <Result : Any> withDb(block: suspend (MyDatabase) -> Result): Result {
         return mutex.withLock {
            if(db == null){
-               db = MyDatabase(databaseFactory.createDatabase())
+               db = MyDatabase(databaseFactory.provideDbDriver(MyDatabase.Schema))
            }
             return@withLock block(db!!)
-
         }
     }
 }

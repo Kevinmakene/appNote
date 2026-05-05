@@ -1,28 +1,20 @@
 package com.bigimpactproject.mysqldeilght
 
 import BdHelper
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class DatabaseFetchersImpl(
     private val bdHelper: BdHelper
 ): DatabaseFetchers {
-    override suspend fun getNotes(): Flow<List<Notes>>? {
+    override suspend fun getNotes(): List<Notes> {
         return bdHelper.withDb { db ->
-            db.noteQueries.selectAll().asFlow().mapToList(Dispatchers.Default).map { list ->
-                list.map { entity ->
-                    Notes(
-                        id = entity.id,
-                        title = entity.title,
-                        description = entity.description
-                    )
-                }
+            db.noteQueries.selectAll().executeAsList().map{
+                Notes(
+                    id = it.id,
+                    title = it.title,
+                    body = it.description
+                )
             }
         }
-
     }
 
     override suspend fun insertNote(title: String, description: String) {

@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.sqldelight)
+
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -27,9 +29,9 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     js {
         browser()
         binaries.executable()
@@ -46,7 +48,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
+
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.ktor.client.android)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -61,16 +65,32 @@ kotlin {
             implementation(libs.sqldelight.coroutines.extensions)
             implementation(libs.kotlinx.kotlinx.coroutines.core)
             implementation(libs.multiplatform.settings)
+
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.content.negotiation)
+
+
+            //koin
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+
+            implementation(libs.compose.navigation)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.native.driver)
         }
         jsMain.dependencies {
-
+            implementation(libs.ktor.client.js)
         }
+
         webMain.dependencies {
             implementation(libs.sqldelight.web.worker.driver)
             implementation(npm("@cashapp/sqldelight-sqljs-worker", libs.versions.sqldelight.get()))
@@ -78,11 +98,15 @@ kotlin {
             implementation(devNpm("copy-webpack-plugin",libs.versions.copyWebpackPlugin.get()))
 
         }
+
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.jvm.driver)
+            implementation(libs.ktor.client.jvm)
+
         }
+
     }
 }
 
