@@ -51,16 +51,30 @@ fun App(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Button(
-                onClick = {
-                    scope.launch {
-                        val response =myRepository.getElement()
-                        notes.clear()
-                        notes.addAll(response)
+            if (isWebTarget()){
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val response =myRepository.getForWeb()
+                            notes.clear()
+                            notes.addAll(response)
+                        }
                     }
+                ){
+                    Text(text = "Insert Note")
                 }
-            ){
-                Text(text = "Insert Note")
+            }else{
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val response =myRepository.getElement()
+                            notes.clear()
+                            notes.addAll(response)
+                        }
+                    }
+                ){
+                    Text(text = "Insert Note")
+                }
             }
 
             LazyColumn {
@@ -98,42 +112,5 @@ fun App(
 
 }
 
-@Composable
-fun MyCardFunction(
-    notes: Notes,
-    onDelete: () -> Unit
-){
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
-            .padding(16.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = notes.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = notes.body,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 15.sp
-                )
-            }
-            Button(
-                onClick = { onDelete() },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(text = "Delete")
-            }
-        }
-    }
-}
 
+expect fun isWebTarget(): Boolean
